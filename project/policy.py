@@ -49,3 +49,35 @@ class RandomPolicy(Policy):
 
     def pick(self) -> int:
         return self._random.randint(self.n_arms)
+
+
+class GittinsIndexPolicy(Policy):
+    """Gittins Index based policy.
+
+    Uses a pre-computed, lazily evaluated Gittins Index.
+    """
+    _cached_index = collections.defaultdict(None)
+
+    def prepare(
+        self,
+        n_arms: int,
+        n_steps: int,
+        discount: float,
+        **kwargs
+    ):
+        self.n_arms = n_arms
+
+        self.cache_index(n_steps, discount)
+
+    def reset(self):
+        pass
+
+    def pick(self) -> int:
+        pass
+
+    def cache_index(self, n_steps: int, discount: float):
+        if self._cached_index[discount] is None:
+            # todo
+            return
+
+        # todo: check if required size is cached
