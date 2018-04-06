@@ -60,10 +60,10 @@ class Oracle:
 
         for run in range(n_runs):
             for i, policy in enumerate(self.policies):
-                policy.reset()
                 self.bandit.seed(seed)
                 actions[run, i], rewards[run, i] = policy.run(
-                    bandit=self.bandit, n_steps=run_length
+                    bandit=self.bandit, n_steps=run_length,
+                    **kwargs
                 )
 
         report = self.Report(

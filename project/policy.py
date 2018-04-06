@@ -1,5 +1,6 @@
 import abc
-from typing import Tuple
+import collections
+from typing import Union, Tuple
 
 import numpy as np
 
@@ -23,19 +24,23 @@ class Policy(RandomStateMixin, metaclass=abc.ABCMeta):
             arm = self.pick()
             action[step] = arm
             reward[step] = bandit.draw(arm)
+            self.receive(arm, reward[step])
 
         return action, reward
 
     @abc.abstractmethod
     def prepare(self, **kwargs):
-        pass
-
-    @abc.abstractmethod
-    def reset(self):
+        """Initialize internal state variables for a full run."""
         pass
 
     @abc.abstractmethod
     def pick(self) -> int:
+        """Choose an arm according to previously observed results."""
+        pass
+
+    @abc.abstractmethod
+    def receive(self, arm: int, reward: 'Union[int, float]'):
+        """Update internal state variables according to received reward."""
         pass
 
 
@@ -44,11 +49,11 @@ class RandomPolicy(Policy):
     def prepare(self, n_arms: int, **kwargs):
         self.n_arms = n_arms
 
-    def reset(self):
-        pass
-
     def pick(self) -> int:
         return self._random.randint(self.n_arms)
+
+    def receive(self, arm: int, reward: Union[int, float]):
+        pass
 
 
 class GittinsIndexPolicy(Policy):
