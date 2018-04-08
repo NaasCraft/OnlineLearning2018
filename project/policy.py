@@ -56,6 +56,74 @@ class RandomPolicy(Policy):
         pass
 
 
+class UCBPolicy(Policy):
+    """Implementation of the Upper Confidence Bound algorithm."""
+    def __init__(
+        self,
+        delta: float,
+        arm_prior: 'Tuple[int, int]'=(1, 1),
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.delta = delta
+        self.arm_prior = arm_prior
+
+    def prepare(self, n_arms: int, **kwargs):
+        self._counts = [0] * n_arms
+        self._states = [self.arm_prior] * n_arms
+
+    def pick(self):
+        best_arm = np.argmax(self._get_arm_values())
+
+        self._counts[best_arm] += 1
+        return best_arm
+
+    def receive(self, arm, reward):
+        last_state = self._states[arm]
+
+        if reward == 1:
+            self._states[arm] = (last_state[0] + 1, last_state[1])
+        else:
+            self._states[arm] = (last_state[0], last_state[1] + 1)
+
+    def _get_arm_values(self):
+        """Return the array of values attributed to each arm.
+
+        If any of the arms was not picked yet, the values will be 1 for any
+        unpicked arm and 0 for the others.
+        When all arms were once drawn, an arm value has the shape:
+
+            s / (s + f)  +  delta * sqrt( log(T) / T(i) )
+
+        where T(i) is the number of times the arm i was picked until now.
+        """
+        if any(c == 0 for c in self._counts):
+            # Test all arms first
+            return np.array([
+                1 if c == 0 else 0
+                for c in self._counts
+            ])
+
+        return np.array([
+            self.get_prob(state) + self.get_confidence_bound(arm)
+            for arm, state in enumerate(self._states)
+        ])
+
+    @staticmethod
+    def get_prob(state):
+        """success / (success + failure)"""
+        if not all(state):
+            raise ValueError(state)
+
+        return state[0] / sum(state)
+
+    def get_confidence_bound(self, arm):
+        """delta * sqrt( log(T) / T(i) )"""
+        return self.delta * np.sqrt(
+            np.log(np.sum(self._counts)) / (self._counts[arm])
+        )
+
+
 class GittinsIndexPolicy(Policy):
     """Gittins Index based policy.
 
