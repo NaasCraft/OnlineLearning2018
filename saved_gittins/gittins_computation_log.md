@@ -1,3 +1,5 @@
+# Last-Remainding-Index
+
 ```
 Running for n_steps=20, beta=0.80
 [...]
@@ -96,4 +98,24 @@ Step 6400/6400
 (Gittins computation (80, 0.90)): 15834.19s
 Saved at saved_gittins/gittins_80_90.npy
 ---
+```
+
+# Value Iteration and Retirement option
+
+```
+Computing index for (n_steps=100, precision=3, discount=0.01)
+(Index computation): 74.36s
+Saving to 'saved_gittins\gittins_vi_100_3_90.npy'
+Computing index for (n_steps=200, precision=3, discount=0.01)
+(Index computation): 339.37s
+Saving to 'saved_gittins\gittins_vi_200_3_90.npy'
+Computing index for (n_steps=300, precision=3, discount=0.01)
+(Index computation): 753.95s
+Saving to 'saved_gittins\gittins_vi_300_3_90.npy'
+Computing index for (n_steps=400, precision=3, discount=0.01)
+(Index computation): 1354.41s
+Saving to 'saved_gittins\gittins_vi_400_3_90.npy'
+Computing index for (n_steps=500, precision=3, discount=0.01)
+(Index computation): 1918.34s
+Saving to 'saved_gittins\gittins_vi_500_3_90.npy'
 ```

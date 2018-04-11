@@ -316,11 +316,15 @@ class GittinsVIPolicy(BBMixin, Policy):
 
     @classmethod
     def _get_or_compute_index(
-            cls, n_steps: int, precision: int, discount: float,
-            n_jobs: Optional[int]=None
-        ):
+        cls, n_steps: int, precision: int, discount: float,
+        n_jobs: Optional[int]=None
+    ):
         for _file, _steps, _prec, _disc in cls._iter_saved_files():
-            if _steps >= n_steps and _prec >= precision and _disc == discount:
+            valid_file = (
+                _steps >= n_steps and _prec >= precision
+                and abs(_disc - discount) < 1e-3
+            )
+            if valid_file:
                 file = _file
                 break
         else:
