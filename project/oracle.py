@@ -14,7 +14,7 @@ class Oracle:
     that was generated using this `Oracle`, or provided by hand.
     """
     Report = collections.namedtuple('OracleReport', (
-        "id", "parameters", "results"
+        "id", "parameters", "results", "actions", "bandit"
     ))
 
     _past_reports: List[Report] = []
@@ -45,15 +45,19 @@ class Oracle:
         seed: Optional[int]=None,
         **kwargs
     ) -> Report:
-        """<TBD>
+        """Evaluate a set of policies against a bandit problem.
 
-        Evaluate a set of policies against a bandit problem.
+        One can pass multiple parameters to `evaluate` which will then be
+        passed again to the policies `run` method (invariately).
         """
         parameters = {
             'n_runs': n_runs, 'run_length': run_length,
             'seed': None,
             'kwargs': kwargs
         }
+
+        for policy in self.policies:
+            policy.seed(seed)
 
         actions = np.zeros((n_runs, len(self.policies), run_length))
         rewards = np.zeros((n_runs, len(self.policies), run_length))
@@ -69,7 +73,9 @@ class Oracle:
         report = self.Report(
             id=len(self._past_reports),
             parameters=parameters,
-            results=rewards
+            results=rewards,
+            actions=actions,
+            bandit=self.bandit
         )
         self._past_reports.append(report)
         return report

@@ -1,6 +1,17 @@
+from contextlib import contextmanager
+import time
 from typing import Optional
 
 import numpy as np
+
+
+@contextmanager
+def timeit(key: 'default', debug=False):
+    start = time.time()
+    yield
+    duration = time.time() - start
+    if debug:
+        print('({}): {:.2f}s'.format(key, duration))
 
 
 class RandomStateMixin:
