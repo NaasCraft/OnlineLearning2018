@@ -92,7 +92,7 @@ class RandomPolicy(Policy):
         pass
 
 
-class UCBPolicy(Policy):
+class UCBPolicy(BBMixin, Policy):
     """Implementation of the Upper Confidence Bound algorithm."""
     def __init__(
         self,
@@ -105,22 +105,14 @@ class UCBPolicy(Policy):
         self.arm_prior = arm_prior
 
     def prepare(self, n_arms: int, **kwargs):
+        super().prepare(n_arms=n_arms, **kwargs)
         self._counts = [0] * n_arms
-        self._states = [self.arm_prior] * n_arms
 
     def pick(self):
         best_arm = np.argmax(self._get_arm_values())
 
         self._counts[best_arm] += 1
         return best_arm
-
-    def receive(self, arm, reward):
-        last_state = self._states[arm]
-
-        if reward == 1:
-            self._states[arm] = (last_state[0] + 1, last_state[1])
-        else:
-            self._states[arm] = (last_state[0], last_state[1] + 1)
 
     def _get_arm_values(self):
         """Return the array of values attributed to each arm.
@@ -142,16 +134,17 @@ class UCBPolicy(Policy):
 
         return np.array([
             self.get_prob(state) + self.get_confidence_bound(arm)
-            for arm, state in enumerate(self._states)
+            for arm, state in enumerate(self._arms_state)
         ])
 
     @staticmethod
     def get_prob(state):
         """success / (success + failure)"""
-        if not all(state):
-            raise ValueError(state)
+        _state = (state[0] + 1, state[1] + 1)
+        if not all(_state):
+            raise ValueError('Invalid state: {}'.format(_state))
 
-        return state[0] / sum(state)
+        return _state[0] / sum(_state)
 
     def get_confidence_bound(self, arm):
         """delta * sqrt( log(T) / T(i) )"""
@@ -258,7 +251,7 @@ class VIPolicy(BBMixin, Policy):
         return best_arm
 
 
-class EpsVIPolicy(VIPolicy):
+class EpsilonVIPolicy(VIPolicy):
     """Epsilon-greedy variant."""
     def __init__(self, epsilon=1e-2, **kwargs):
         super().__init__(**kwargs)
@@ -311,7 +304,7 @@ class GittinsVIPolicy(BBMixin, Policy):
                 file,
                 int(s.group('n_steps')),
                 int(s.group('precision')),
-                round(int(s.group('discount')), 2),
+                round(int(s.group('discount')) / 100, 2),
             )
 
     @classmethod
